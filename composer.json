@@ -1,0 +1,48 @@
+{
+    "name": "rs/socialite-healthcare-authenticator",
+    "version": "0.1.0",
+    "description": "Socialite Healthcare Authenticator",
+    "keywords": [
+        "rs",
+        "healthcare-authenticator"
+    ],
+    "homepage": "https://github.com/rs/socialite-healthcare-authenticator",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Param Dhaliwal",
+            "email": "param@redsnapper.net",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "socialiteproviders/manager": "^4.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "RedSnapper\\SocialiteProviders\\HealthCareAuthenticator\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RedSnapper\\SocialiteProviders\\HealthCareAuthenticator\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "laravel/pint": "^1.21",
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.5"
+    }
+}
