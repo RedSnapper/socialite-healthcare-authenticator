@@ -2,12 +2,13 @@ name: Tests
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-
+    paths:
+      - '**.php'
+      - '.github/workflows/tests.yml'
+      - 'phpunit.xml.dist'
+      - 'composer.json'
+      - 'composer.lock'
+      -
 jobs:
   tests:
     name: Run tests
@@ -19,13 +20,19 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring, sqlite3, pdo_sqlite, json, tokenizer, xml, curl, zip
+          coverage: none
+
+      - name: Setup problem matchers
+        run: |
+            echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+            echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest

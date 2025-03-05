@@ -33,16 +33,24 @@
     "scripts": {
         "test": "vendor/bin/phpunit",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
-        "format": "vendor/bin/pint"
+        "format": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require-dev": {
+        "larastan/larastan": "^3.1",
         "laravel/pint": "^1.21",
         "orchestra/testbench": "^10.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
         "phpunit/phpunit": "^11.5"
     }
 }
