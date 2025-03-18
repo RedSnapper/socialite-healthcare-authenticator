@@ -5,6 +5,7 @@ namespace RedSnapper\SocialiteProviders\HealthCareAuthenticator\Tests;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Utils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
 use RedSnapper\SocialiteProviders\HealthCareAuthenticator\HealthCareAuthenticatorRequestException;
@@ -124,5 +125,35 @@ class ProviderTest extends TestCase
         $request = new Request(['error' => 'denied', 'error_description' => 'User denied access']);
         $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
         $provider->user();
+    }
+
+    #[Test]
+    public function can_retrieve_consents_for_a_user()
+    {
+        $user = (new HealthCareAuthenticatorUser())->map([
+            'id'=>123
+        ]);
+
+        Http::fake([
+            '*/consent/user/123'=> Http::response([
+                [
+                    'consent_id' => 1,
+                    'caption'=>'Consent 1',
+                ],
+                [
+                    'consent_id' => 2,
+                    'caption'=>'Consent 2',
+                ]
+            ])
+        ]);
+
+        $consents = $user->consents();
+
+        $this->assertEquals(2, $consents->count());
+        $this->assertEquals([1,2], $consents->getIds());
+        $this->assertEquals(['Consent 1','Consent 2'], $consents->getCaptions());
+
+
+
     }
 }

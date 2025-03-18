@@ -3,6 +3,7 @@
 namespace RedSnapper\SocialiteProviders\HealthCareAuthenticator;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Two\User;
 
 /**
@@ -80,5 +81,17 @@ class HealthCareAuthenticatorUser extends User
     public function getProfessionalCode(): ProfessionalCode
     {
         return new ProfessionalCode($this->ucis);
+    }
+
+    public function consents():Consents
+    {
+        $response =  Http::withHeaders([
+            'Ocp-Apim-Subscription-Key'=>config('services.hca.api_key')
+        ])
+            ->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/consent/b2b/consent/user/' . $this->getId());
+
+        $response->throw();
+
+        return new Consents($response->json());
     }
 }
