@@ -52,6 +52,12 @@ You should now be able to use the provider like you would regularly use Socialit
 return Socialite::driver('hca')->redirect();
 ```
 
+Can provide the locale using the with method.
+
+```php
+return Socialite::driver('hca')->with(['locale'=>'it-IT'])->redirect();
+```
+
 Available methods for the returned user.
 
 ```php
@@ -67,8 +73,8 @@ $user->getPhoneNumber();
 $user->getWorkplaceAddress();
 $user->getCity();
 $user->getZipCode();
-$user->getSpecialtyId();
-$user->getProfessionalCode();
+$user->getSpecialties(); // [Speciality]
+$user->getProfessionalCode(); // ProfessionalCode
 $user->getOneKeyId();
 $user->getTrustLevel();
 

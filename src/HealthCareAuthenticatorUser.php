@@ -2,6 +2,7 @@
 
 namespace RedSnapper\SocialiteProviders\HealthCareAuthenticator;
 
+use Illuminate\Support\Arr;
 use Laravel\Socialite\Two\User;
 
 /**
@@ -12,8 +13,8 @@ use Laravel\Socialite\Two\User;
  * @property-read string|null $workplaceAddress
  * @property-read array $city
  * @property-read string|null $zipCode
- * @property-read string|null $specialties
- * @property-read string|null $ucis
+ * @property-read array|null $specialties
+ * @property-read array|null $ucis
  * @property-read string|null $oneKeyId
  * @property-read string|null $trustLevel
  */
@@ -59,9 +60,16 @@ class HealthCareAuthenticatorUser extends User
         return $this->oneKeyId;
     }
 
-    public function getSpecialtyId(): ?string
+    /**
+     * @return Speciality[]
+     */
+    public function getSpecialties():array
     {
-        return $this->specialties;
+        if(is_null($this->specialties)){
+            return [];
+        }
+
+        return Arr::map($this->specialties,fn($item)=>new Speciality($item['code'], $item['label'], $item['locale']));
     }
 
     public function getTrustLevel(): ?string
@@ -69,8 +77,8 @@ class HealthCareAuthenticatorUser extends User
         return $this->trustLevel;
     }
 
-    public function getProfessionalCode(): ?string
+    public function getProfessionalCode(): ProfessionalCode
     {
-        return $this->ucis;
+        return new ProfessionalCode($this->ucis);
     }
 }

@@ -63,8 +63,16 @@ class ProviderTest extends TestCase
             'businessAddress' => '23 Street',
             'city' => ['label' => 'Townsville'],
             'zipCode' => 'CV123',
-            'specialties' => 'SPEC1',
-            'ucis' => '123',
+            'specialties' =>[
+                ['code'=>'SP.WFR.CG', 'label'=>'General Surgery', 'locale'=>'en'],
+            ],
+            'ucis' => [
+                'adelin' => 'adelin123',
+                'gln'=> 'gln123',
+                'lanr'=> 'lanr123',
+                'npi'=>'npi123',
+                'rpps'=> 'rpps123',
+            ],
             'oneKeyId' => '456',
             'trustLevel' => '2',
         ])));
@@ -93,13 +101,20 @@ class ProviderTest extends TestCase
         $this->assertEquals('+4412345678', $user->getPhoneNumber());
         $this->assertEquals('23 Street', $user->getWorkplaceAddress());
         $this->assertEquals('Townsville', $user->getCity());
-        $this->assertEquals('CV123', $user->getZipCode());
-        $this->assertEquals('SPEC1', $user->getSpecialtyId());
-        $this->assertEquals('123', $user->getProfessionalCode());
+        $this->assertEquals('CV123', $user->getZipCode());;
         $this->assertEquals('456', $user->getOneKeyId());
         $this->assertEquals('2', $user->getTrustLevel());
+        $this->assertEquals('General Surgery',$user->getSpecialties()[0]->label);
+        $this->assertEquals('SP.WFR.CG',$user->getSpecialties()[0]->code);
+        $this->assertEquals('en',$user->getSpecialties()[0]->locale);
+        $this->assertEquals('adelin123', $user->getProfessionalCode()->adelin());
+        $this->assertEquals('gln123', $user->getProfessionalCode()->gln());
+        $this->assertEquals('lanr123', $user->getProfessionalCode()->lanr());
+        $this->assertEquals('npi123', $user->getProfessionalCode()->npi());
+        $this->assertEquals('rpps123', $user->getProfessionalCode()->rpps());
 
     }
+
 
     #[Test]
     public function it_will_throw_an_exception_if_the_user_cannot_be_retrieved()

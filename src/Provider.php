@@ -22,8 +22,9 @@ class Provider extends AbstractProvider
     public function getScopes()
     {
         return [
-            'openid',
             'https://auth.onekeyconnect.com/x/'.(Arr::get($this->config, 'profile_extended', false) ? 'profile.extended' : 'profile.basic'),
+            'openid',
+            'profile'
         ];
     }
 
