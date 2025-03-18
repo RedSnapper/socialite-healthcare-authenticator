@@ -2,8 +2,8 @@
 
 Allows for web portals for HCPs to seamlessly implement and maintain sign-on, authentication, and/or verification through integration with one of the world’s largest and most accurate sources of HCP data.
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/rs/socialite-healthcare-authenticator.svg?style=flat-square)](https://packagist.org/packages/rs/socialite-doccheck)
-[![GitHub Tests Action Status](https://github.com/redsnapper/socialite-healthcare-authenticator/workflows/run-tests/badge.svg)](https://github.com/redsnapper/socialite-doccheck/actions)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/rs/socialite-healthcare-authenticator.svg?style=flat-square)](https://packagist.org/packages/rs/socialite-healthcare-authenticator)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/redsnapper/socialite-healthcare-authenticator/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/redsnapper/socialite-healthcare-authenticator/actions?query=workflow%3Atests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/rs/socialite-healthcare-authenticator.svg?style=flat-square)](https://packagist.org/packages/rs/socialite-healthcare-authenticator)
 
 ## Installation
