@@ -83,12 +83,12 @@ class HealthCareAuthenticatorUser extends User
         return new ProfessionalCode($this->ucis);
     }
 
-    public function consents():Consents
+    public function consents(): Consents
     {
-        $response =  Http::withHeaders([
-            'Ocp-Apim-Subscription-Key'=>config('services.hca.api_key')
+        $response = Http::withHeaders([
+            'Ocp-Apim-Subscription-Key' => config('services.hca.api_key'),
         ])
-            ->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/consent/b2b/consent/user/' . $this->getId());
+            ->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/consent/b2b/consent/user/'.$this->getId());
 
         $response->throw();
 

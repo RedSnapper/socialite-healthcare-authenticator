@@ -130,30 +130,28 @@ class ProviderTest extends TestCase
     #[Test]
     public function can_retrieve_consents_for_a_user()
     {
-        $user = (new HealthCareAuthenticatorUser())->map([
-            'id'=>123
+        $user = (new HealthCareAuthenticatorUser)->map([
+            'id' => 123,
         ]);
 
         Http::fake([
-            '*/consent/user/123'=> Http::response([
+            '*/consent/user/123' => Http::response([
                 [
                     'consent_id' => 1,
-                    'caption'=>'Consent 1',
+                    'caption' => 'Consent 1',
                 ],
                 [
                     'consent_id' => 2,
-                    'caption'=>'Consent 2',
-                ]
-            ])
+                    'caption' => 'Consent 2',
+                ],
+            ]),
         ]);
 
         $consents = $user->consents();
 
         $this->assertEquals(2, $consents->count());
-        $this->assertEquals([1,2], $consents->getIds());
-        $this->assertEquals(['Consent 1','Consent 2'], $consents->getCaptions());
-
-
+        $this->assertEquals([1, 2], $consents->getIds());
+        $this->assertEquals(['Consent 1', 'Consent 2'], $consents->getCaptions());
 
     }
 }
