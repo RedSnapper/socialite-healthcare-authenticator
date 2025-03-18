@@ -24,7 +24,7 @@ class Provider extends AbstractProvider
         return [
             'https://auth.onekeyconnect.com/x/'.(Arr::get($this->config, 'profile_extended', false) ? 'profile.extended' : 'profile.basic'),
             'openid',
-            'profile'
+            'profile',
         ];
     }
 

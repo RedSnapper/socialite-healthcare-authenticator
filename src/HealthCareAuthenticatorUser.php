@@ -63,13 +63,13 @@ class HealthCareAuthenticatorUser extends User
     /**
      * @return Speciality[]
      */
-    public function getSpecialties():array
+    public function getSpecialties(): array
     {
-        if(is_null($this->specialties)){
+        if (is_null($this->specialties)) {
             return [];
         }
 
-        return Arr::map($this->specialties,fn($item)=>new Speciality($item['code'], $item['label'], $item['locale']));
+        return Arr::map($this->specialties, fn ($item) => new Speciality($item['code'], $item['label'], $item['locale']));
     }
 
     public function getTrustLevel(): ?string
