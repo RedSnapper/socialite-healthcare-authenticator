@@ -40,7 +40,17 @@ class Provider extends AbstractProvider
 
     protected function getUserByToken($token)
     {
-        $response = $this->getHttpClient()->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/me/profile', [
+        $profile = $this->getUserInfoByToken($token,'/profile');
+        $account = $this->getUserInfoByToken($token,'/account');
+
+        $profile['email'] = $account['email'];
+
+        return $profile;
+    }
+
+    protected function getUserInfoByToken(string $token,string $endpoint):array
+    {
+        $response = $this->getHttpClient()->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/me'. $endpoint, [
             'headers' => [
                 'Accept' => 'application/json',
                 'Authorization' => 'Bearer '.$token,
@@ -62,7 +72,7 @@ class Provider extends AbstractProvider
     protected function mapUserToObject(array $user)
     {
         return (new HealthCareAuthenticatorUser)->setRaw($user)->map([
-            'id' => $user['id'],
+            'id' => Arr::get($user, 'id'),
             'name' => Arr::get($user, 'firstName').' '.Arr::get($user, 'lastName'),
             'email' => Arr::get($user, 'email'),
             'title' => Arr::get($user, 'title'),

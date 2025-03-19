@@ -56,7 +56,6 @@ class ProviderTest extends TestCase
         $basicProfileResponse = $this->mock(ResponseInterface::class);
         $basicProfileResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
             'id' => '1',
-            'email' => 'web@redsnapper.net',
             'title' => ['label' => 'Mr'],
             'firstName' => 'John',
             'lastName' => 'Doe',
@@ -77,14 +76,21 @@ class ProviderTest extends TestCase
             'oneKeyId' => '456',
             'trustLevel' => '2',
         ])));
+        $basicAccountResponse = $this->mock(ResponseInterface::class);
+        $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
+            'email' => 'web@redsnapper.net',
+        ])));
 
         $accessTokenResponse = $this->mock(ResponseInterface::class);
         $accessTokenResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode(['access_token' => 'fake-token'])));
 
         $guzzle = $this->mock(Client::class);
         $guzzle->expects('post')->andReturns($accessTokenResponse);
-
-        $guzzle->expects('get')->andReturns($basicProfileResponse);
+        $guzzle->expects('get')
+            ->twice()
+            ->andReturnUsing(fn($url)=>
+                str_ends_with($url,'account') ? $basicAccountResponse : $basicProfileResponse
+            );
 
         $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
 
