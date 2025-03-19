@@ -40,17 +40,17 @@ class Provider extends AbstractProvider
 
     protected function getUserByToken($token)
     {
-        $profile = $this->getUserInfoByToken($token,'/profile');
-        $account = $this->getUserInfoByToken($token,'/account');
+        $profile = $this->getUserInfoByToken($token, '/profile');
+        $account = $this->getUserInfoByToken($token, '/account');
 
         $profile['email'] = $account['email'];
 
         return $profile;
     }
 
-    protected function getUserInfoByToken(string $token,string $endpoint):array
+    protected function getUserInfoByToken(string $token, string $endpoint): array
     {
-        $response = $this->getHttpClient()->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/me'. $endpoint, [
+        $response = $this->getHttpClient()->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/me'.$endpoint, [
             'headers' => [
                 'Accept' => 'application/json',
                 'Authorization' => 'Bearer '.$token,

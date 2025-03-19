@@ -88,8 +88,7 @@ class ProviderTest extends TestCase
         $guzzle->expects('post')->andReturns($accessTokenResponse);
         $guzzle->expects('get')
             ->twice()
-            ->andReturnUsing(fn($url)=>
-                str_ends_with($url,'account') ? $basicAccountResponse : $basicProfileResponse
+            ->andReturnUsing(fn ($url) => str_ends_with($url, 'account') ? $basicAccountResponse : $basicProfileResponse
             );
 
         $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
