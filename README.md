@@ -26,8 +26,10 @@ Please see the [Base Installation Guide](https://socialiteproviders.com/usage/),
   'client_secret' => env('HCA_CLIENT_SECRET'),  
   'redirect' => env('HCA_REDIRECT_URI'),
   'profile_extended'=>true // Set this to false if you dont have access to the full profile
+  'api_key'=>env('HCA_API_KEY')
 ],
 ```
+Add the API key for user consents and magic links.
 
 ### Add provider event listener
 
@@ -78,6 +80,21 @@ $user->getProfessionalCode(); // ProfessionalCode
 $user->getOneKeyId();
 $user->getTrustLevel();
 
+```
+
+### Consents
+
+You can also retrieve the user's consents using the `consents` method.
+
+```php
+$user->consents()->all();
+```
+
+This returns back a Laravel collection.
+
+```php
+$user->consents()->ids(); // [1,2,3]
+$user->consents()->captions(); // ['Consent 1','Consent 2']
 ```
 
 ### Handling errors
