@@ -38,7 +38,7 @@ class ProfessionalCode
         return $this->getCode('rpps');
     }
 
-    public function codiceFisacle(): ?string
+    public function codiceFiscale(): ?string
     {
         return $this->getCode('cf');
     }

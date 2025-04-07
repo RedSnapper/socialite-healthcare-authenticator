@@ -119,7 +119,7 @@ class ProviderTest extends TestCase
         $this->assertEquals('lanr123', $user->getProfessionalCode()->lanr());
         $this->assertEquals('npi123', $user->getProfessionalCode()->npi());
         $this->assertEquals('rpps123', $user->getProfessionalCode()->rpps());
-        $this->assertEquals('signup_ucis', $user->getProfessionalCode()->codiceFisacle());
+        $this->assertEquals('signup_ucis', $user->getProfessionalCode()->codiceFiscale());
         $this->assertEquals('signup_ucis', $user->getProfessionalCode()->signUp());
 
     }
