@@ -44,6 +44,7 @@ class Provider extends AbstractProvider
         $account = $this->getUserInfoByToken($token, '/account');
 
         $profile['email'] = $account['email'];
+        $profile['signup_ucis'] = $account['uci'];
 
         return $profile;
     }

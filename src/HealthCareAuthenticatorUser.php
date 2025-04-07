@@ -80,7 +80,7 @@ class HealthCareAuthenticatorUser extends User
 
     public function getProfessionalCode(): ProfessionalCode
     {
-        return new ProfessionalCode($this->ucis);
+        return new ProfessionalCode($this->ucis, $this->getRaw()['signup_ucis']);
     }
 
     public function consents(): Consents
