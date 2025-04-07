@@ -79,6 +79,7 @@ class ProviderTest extends TestCase
         $basicAccountResponse = $this->mock(ResponseInterface::class);
         $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
             'email' => 'web@redsnapper.net',
+            'uci' => 'signup_ucis',
         ])));
 
         $accessTokenResponse = $this->mock(ResponseInterface::class);
@@ -119,6 +120,8 @@ class ProviderTest extends TestCase
         $this->assertEquals('lanr123', $user->getProfessionalCode()->lanr());
         $this->assertEquals('npi123', $user->getProfessionalCode()->npi());
         $this->assertEquals('rpps123', $user->getProfessionalCode()->rpps());
+        $this->assertEquals('signup_ucis', $user->getProfessionalCode()->codiceFisacle());
+        $this->assertEquals('signup_ucis', $user->getProfessionalCode()->signUp());
 
     }
 

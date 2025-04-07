@@ -8,33 +8,48 @@ class ProfessionalCode
 {
     private array $code;
 
-    public function __construct(?array $code)
+    public function __construct(?array $code,private ?string $signUpCode = null)
     {
         $this->code = is_null($code) ? [] : $code;
     }
 
     public function adelin(): ?string
     {
-        return Arr::get($this->code, 'adelin');
+        return $this->getCode('adelin');
     }
 
     public function gln(): ?string
     {
-        return Arr::get($this->code, 'gln');
+        return $this->getCode('gln');
     }
 
     public function lanr(): ?string
     {
-        return Arr::get($this->code, 'lanr');
+        return $this->getCode('lanr');
     }
 
     public function npi(): ?string
     {
-        return Arr::get($this->code, 'npi');
+        return $this->getCode('npi');
     }
 
     public function rpps(): ?string
     {
-        return Arr::get($this->code, 'rpps');
+        return $this->getCode('rpps');
+    }
+
+    public function codiceFisacle(): ?string
+    {
+        return $this->getCode('cf');
+    }
+
+    protected function getCode(string $key): ?string
+    {
+        return Arr::get($this->code, $key,$this->signUp());
+    }
+
+    public function signUp():?string
+    {
+        return $this->signUpCode;
     }
 }

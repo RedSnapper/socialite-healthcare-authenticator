@@ -81,6 +81,18 @@ $user->getOneKeyId();
 $user->getTrustLevel();
 
 ```
+### Professional Code
+
+You can also retrieve the user's professional code using the `getProfessionalCode` method.
+This returns back a ProfessionalCode object. The professional code has a method for each professional code type. 
+
+````php
+
+$professionalCode = $user->getProfessionalCode();
+$professionalCode->codeFiscale();
+````
+
+The code is sourced from Onekey data. If unavailable, it defaults to the code provided during the signup process.
 
 ### Consents
 
