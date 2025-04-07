@@ -8,7 +8,7 @@ class ProfessionalCode
 {
     private array $code;
 
-    public function __construct(?array $code,private ?string $signUpCode = null)
+    public function __construct(?array $code, private ?string $signUpCode = null)
     {
         $this->code = is_null($code) ? [] : $code;
     }
@@ -45,10 +45,10 @@ class ProfessionalCode
 
     protected function getCode(string $key): ?string
     {
-        return Arr::get($this->code, $key,$this->signUp());
+        return Arr::get($this->code, $key, $this->signUp());
     }
 
-    public function signUp():?string
+    public function signUp(): ?string
     {
         return $this->signUpCode;
     }
