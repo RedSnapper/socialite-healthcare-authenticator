@@ -53,31 +53,37 @@ class ProviderTest extends TestCase
         $session->put('state', 'state');
         $request->setLaravelSession($session);
 
-        $basicProfileResponse = $this->mock(ResponseInterface::class);
-        $basicProfileResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
-            'id' => '1',
-            'title' => ['label' => 'Mr'],
-            'firstName' => 'John',
-            'lastName' => 'Doe',
-            'intlPhone' => '+4412345678',
-            'businessAddress' => '23 Street',
-            'city' => ['label' => 'Townsville'],
-            'zipCode' => 'CV123',
-            'specialties' => [
-                ['code' => 'SP.WFR.CG', 'label' => 'General Surgery', 'locale' => 'en'],
-            ],
-            'ucis' => [
-                'adelin' => 'adelin123',
-                'gln' => 'gln123',
-                'lanr' => 'lanr123',
-                'npi' => 'npi123',
-                'rpps' => 'rpps123',
-            ],
-            'oneKeyId' => '456',
-            'trustLevel' => '2',
-        ])));
+        Http::fake([
+            '*/user/b2b/user/abc123/profile' => Http::response([
+                'id' => 'abc123',
+                'title' => ['label' => 'Mr'],
+                'firstName' => 'John',
+                'lastName' => 'Doe',
+                'intlPhone' => '+4412345678',
+                'businessAddress' => '23 Street',
+                'city' => ['label' => 'Townsville'],
+                'zipCode' => 'CV123',
+                'specialties' => [
+                    ['code' => 'SP.WFR.CG', 'label' => 'General Surgery', 'locale' => 'en'],
+                ],
+                'professionalRegistrations' => [
+                    ['name'=>'RPPS','value'=>'rpps123'],
+                    ['name'=>'ADELI','value'=>'adeli123'],
+                    ['name'=>'CIF','value'=>'cif123'],
+                    ['name'=>'GLN','value'=>'gln123'],
+                    ['name'=>'LANR','value'=>'lanr123'],
+                    ['name'=>'NPI','value'=>'npi123'],
+                ],
+
+                'oneKeyId' => '456',
+                'trustLevel' => '2',
+            ]),
+        ]);
+
+
         $basicAccountResponse = $this->mock(ResponseInterface::class);
         $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
+            'id'=>'abc123',
             'email' => 'web@redsnapper.net',
             'uci' => 'signup_ucis',
         ])));
@@ -88,9 +94,8 @@ class ProviderTest extends TestCase
         $guzzle = $this->mock(Client::class);
         $guzzle->expects('post')->andReturns($accessTokenResponse);
         $guzzle->expects('get')
-            ->twice()
-            ->andReturnUsing(fn ($url) => str_ends_with($url, 'account') ? $basicAccountResponse : $basicProfileResponse
-            );
+            ->once()
+            ->andReturn($basicAccountResponse);
 
         $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
 
@@ -99,7 +104,7 @@ class ProviderTest extends TestCase
         $user = $provider->user();
 
         $this->assertInstanceOf(HealthCareAuthenticatorUser::class, $user);
-        $this->assertEquals(1, $user->getId());
+        $this->assertEquals('abc123', $user->getId());
         $this->assertEquals('web@redsnapper.net', $user->getEmail());
         $this->assertEquals('John Doe', $user->getName());
         $this->assertEquals('Mr', $user->getTitle());
@@ -114,12 +119,12 @@ class ProviderTest extends TestCase
         $this->assertEquals('General Surgery', $user->getSpecialties()[0]->label);
         $this->assertEquals('SP.WFR.CG', $user->getSpecialties()[0]->code);
         $this->assertEquals('en', $user->getSpecialties()[0]->locale);
-        $this->assertEquals('adelin123', $user->getProfessionalCode()->adelin());
+        $this->assertEquals('adeli123', $user->getProfessionalCode()->adeli());
         $this->assertEquals('gln123', $user->getProfessionalCode()->gln());
         $this->assertEquals('lanr123', $user->getProfessionalCode()->lanr());
         $this->assertEquals('npi123', $user->getProfessionalCode()->npi());
         $this->assertEquals('rpps123', $user->getProfessionalCode()->rpps());
-        $this->assertEquals('signup_ucis', $user->getProfessionalCode()->codiceFiscale());
+        $this->assertEquals('cif123', $user->getProfessionalCode()->codiceFiscale());
         $this->assertEquals('signup_ucis', $user->getProfessionalCode()->signUp());
 
     }

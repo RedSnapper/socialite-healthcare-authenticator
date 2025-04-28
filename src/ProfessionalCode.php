@@ -6,46 +6,57 @@ use Illuminate\Support\Arr;
 
 class ProfessionalCode
 {
-    private array $code;
+    /** @var array<array{name: string, value: string}> */
+    private array $registrations;
 
-    public function __construct(?array $code, private ?string $signUpCode = null)
+    public function __construct(?array $registrations, private readonly ?string $signUpCode = null)
     {
-        $this->code = is_null($code) ? [] : $code;
+        $this->registrations = is_null($registrations) ? [] : $registrations;
     }
 
-    public function adelin(): ?string
+    public function adeli(): ?string
     {
-        return $this->getCode('adelin');
+        return $this->getCode('ADELI');
     }
 
     public function gln(): ?string
     {
-        return $this->getCode('gln');
+        return $this->getCode('GLN');
     }
 
     public function lanr(): ?string
     {
-        return $this->getCode('lanr');
+        return $this->getCode('LANR');
     }
 
     public function npi(): ?string
     {
-        return $this->getCode('npi');
+        return $this->getCode('NPI');
     }
 
     public function rpps(): ?string
     {
-        return $this->getCode('rpps');
+        return $this->getCode('RPPS');
     }
 
     public function codiceFiscale(): ?string
     {
-        return $this->getCode('cf');
+        return $this->getCode('CIF');
     }
 
     protected function getCode(string $key): ?string
     {
-        return Arr::get($this->code, $key, $this->signUp());
+        return $this->findRegistrationValue($key) ?? $this->signUp();
+    }
+
+    private function findRegistrationValue(string $key): ?string
+    {
+        $registration = Arr::first(
+            $this->registrations,
+            fn($registration) => Arr::get($registration, 'name') === $key
+        );
+
+        return Arr::get($registration, 'value');
     }
 
     public function signUp(): ?string

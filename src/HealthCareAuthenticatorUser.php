@@ -15,6 +15,7 @@ use Laravel\Socialite\Two\User;
  * @property-read array $city
  * @property-read string|null $zipCode
  * @property-read array|null $specialties
+ * @property-read array|null $professionalRegistrations
  * @property-read array|null $ucis
  * @property-read string|null $oneKeyId
  * @property-read string|null $trustLevel
@@ -80,7 +81,7 @@ class HealthCareAuthenticatorUser extends User
 
     public function getProfessionalCode(): ProfessionalCode
     {
-        return new ProfessionalCode($this->ucis, $this->getRaw()['signup_ucis']);
+        return new ProfessionalCode($this->professionalRegistrations, $this->getRaw()['signup_ucis']);
     }
 
     public function consents(): Consents

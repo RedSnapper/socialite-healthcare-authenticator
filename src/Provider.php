@@ -3,6 +3,7 @@
 namespace RedSnapper\SocialiteProviders\HealthCareAuthenticator;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Http;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 
 class Provider extends AbstractProvider
@@ -22,7 +23,8 @@ class Provider extends AbstractProvider
     public function getScopes()
     {
         return [
-            'https://auth.onekeyconnect.com/x/'.(Arr::get($this->config, 'profile_extended', false) ? 'profile.extended' : 'profile.basic'),
+            'https://auth.onekeyconnect.com/x/'.(Arr::get($this->config, 'profile_extended',
+                false) ? 'profile.extended' : 'profile.basic'),
             'openid',
             'profile',
         ];
@@ -30,7 +32,8 @@ class Provider extends AbstractProvider
 
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase('https://auth.onekeyconnect.com/auth.onekeyconnect.com/b2c_1a_hca_signup_signin/oauth2/v2.0/authorize', $state);
+        return $this->buildAuthUrlFromBase('https://auth.onekeyconnect.com/auth.onekeyconnect.com/b2c_1a_hca_signup_signin/oauth2/v2.0/authorize',
+            $state);
     }
 
     protected function getTokenUrl()
@@ -40,8 +43,9 @@ class Provider extends AbstractProvider
 
     protected function getUserByToken($token)
     {
-        $profile = $this->getUserInfoByToken($token, '/profile');
+
         $account = $this->getUserInfoByToken($token, '/account');
+        $profile = $this->getUserById($account['id']);
 
         $profile['email'] = $account['email'];
         $profile['signup_ucis'] = $account['uci'];
@@ -51,14 +55,26 @@ class Provider extends AbstractProvider
 
     protected function getUserInfoByToken(string $token, string $endpoint): array
     {
-        $response = $this->getHttpClient()->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/me'.$endpoint, [
-            'headers' => [
-                'Accept' => 'application/json',
-                'Authorization' => 'Bearer '.$token,
-            ],
-        ]);
+        $response = $this->getHttpClient()->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/me'.$endpoint,
+            [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer '.$token,
+                ],
+            ]);
 
         return json_decode($response->getBody(), true);
+    }
+
+    protected function getUserById(string $id): array
+    {
+        return Http::withHeaders([
+            'Ocp-Apim-Subscription-Key' => config('services.hca.api_key'),
+        ])
+            ->retry(1,200)
+            ->get("https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/b2b/user/$id/profile")
+            ->throw()
+            ->json();
     }
 
     public function user()
@@ -84,7 +100,7 @@ class Provider extends AbstractProvider
             'city' => Arr::get($user, 'city'),
             'zipCode' => Arr::get($user, 'zipCode'),
             'specialties' => Arr::get($user, 'specialties'),
-            'ucis' => Arr::get($user, 'ucis'),
+            'professionalRegistrations' => Arr::get($user, 'professionalRegistrations'),
             'oneKeyId' => Arr::get($user, 'oneKeyId'),
             'trustLevel' => Arr::get($user, 'trustLevel'),
         ]);
