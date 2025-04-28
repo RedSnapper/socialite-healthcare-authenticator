@@ -67,12 +67,12 @@ class ProviderTest extends TestCase
                     ['code' => 'SP.WFR.CG', 'label' => 'General Surgery', 'locale' => 'en'],
                 ],
                 'professionalRegistrations' => [
-                    ['name'=>'RPPS','value'=>'rpps123'],
-                    ['name'=>'ADELI','value'=>'adeli123'],
-                    ['name'=>'CIF','value'=>'cif123'],
-                    ['name'=>'GLN','value'=>'gln123'],
-                    ['name'=>'LANR','value'=>'lanr123'],
-                    ['name'=>'NPI','value'=>'npi123'],
+                    ['name' => 'RPPS', 'value' => 'rpps123'],
+                    ['name' => 'ADELI', 'value' => 'adeli123'],
+                    ['name' => 'CIF', 'value' => 'cif123'],
+                    ['name' => 'GLN', 'value' => 'gln123'],
+                    ['name' => 'LANR', 'value' => 'lanr123'],
+                    ['name' => 'NPI', 'value' => 'npi123'],
                 ],
 
                 'oneKeyId' => '456',
@@ -80,10 +80,9 @@ class ProviderTest extends TestCase
             ]),
         ]);
 
-
         $basicAccountResponse = $this->mock(ResponseInterface::class);
         $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
-            'id'=>'abc123',
+            'id' => 'abc123',
             'email' => 'web@redsnapper.net',
             'uci' => 'signup_ucis',
         ])));

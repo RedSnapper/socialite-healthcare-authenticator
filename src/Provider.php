@@ -71,7 +71,7 @@ class Provider extends AbstractProvider
         return Http::withHeaders([
             'Ocp-Apim-Subscription-Key' => config('services.hca.api_key'),
         ])
-            ->retry(1,200)
+            ->retry(1, 200)
             ->get("https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/b2b/user/$id/profile")
             ->throw()
             ->json();

@@ -53,7 +53,7 @@ class ProfessionalCode
     {
         $registration = Arr::first(
             $this->registrations,
-            fn($registration) => Arr::get($registration, 'name') === $key
+            fn ($registration) => Arr::get($registration, 'name') === $key
         );
 
         return Arr::get($registration, 'value');
