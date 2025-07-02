@@ -2,6 +2,7 @@
 
 namespace RedSnapper\SocialiteProviders\HealthCareAuthenticator;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
@@ -68,13 +69,26 @@ class Provider extends AbstractProvider
 
     protected function getUserById(string $id): array
     {
-        return Http::withHeaders([
-            'Ocp-Apim-Subscription-Key' => config('services.hca.api_key'),
-        ])
-            ->retry(1, 200)
-            ->get("https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/b2b/user/$id/profile")
-            ->throw()
-            ->json();
+        try {
+            return Http::withHeaders([
+                'Ocp-Apim-Subscription-Key' => config('services.hca.api_key'),
+            ])
+                ->retry(1, 200)
+                ->get("https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/b2b/user/$id/profile")
+                ->throw()
+                ->json();
+        } catch (RequestException $e) {
+            if ($e->response->status() === 404) {
+                throw new UserNotFoundException(
+                    userId: $id,
+                    responseBody: $e->response->json(),
+                    previous: $e
+                );
+            }
+            
+            // Re-throw other exceptions
+            throw $e;
+        }
     }
 
     public function user()

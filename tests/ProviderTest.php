@@ -4,6 +4,7 @@ namespace RedSnapper\SocialiteProviders\HealthCareAuthenticator\Tests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Utils;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
@@ -11,6 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 use RedSnapper\SocialiteProviders\HealthCareAuthenticator\HealthCareAuthenticatorRequestException;
 use RedSnapper\SocialiteProviders\HealthCareAuthenticator\HealthCareAuthenticatorUser;
 use RedSnapper\SocialiteProviders\HealthCareAuthenticator\Provider;
+use RedSnapper\SocialiteProviders\HealthCareAuthenticator\UserNotFoundException;
 use SocialiteProviders\Manager\Config;
 
 class ProviderTest extends TestCase
@@ -136,6 +138,78 @@ class ProviderTest extends TestCase
 
         $request = new Request(['error' => 'denied', 'error_description' => 'User denied access']);
         $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
+        $provider->user();
+    }
+
+    #[Test]
+    public function it_throws_user_not_found_exception_on_404_response()
+    {
+        $this->expectException(UserNotFoundException::class);
+        $this->expectExceptionMessage("User with ID 'test-user-id' was not found in Healthcare Authenticator.");
+
+        $request = new Request(['code' => 'auth-code', 'state' => 'state']);
+        $session = $this->app->make('session')->driver('array');
+        $session->put('state', 'state');
+        $request->setLaravelSession($session);
+
+        Http::fake([
+            '*/user/test-user-id/profile' => Http::response([
+                'status' => 'No Found',
+                'Body' => '',
+            ], 404),
+        ]);
+
+        $basicAccountResponse = $this->mock(ResponseInterface::class);
+        $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
+            'id' => 'test-user-id',
+            'email' => 'test@example.com',
+        ])));
+
+        $accessTokenResponse = $this->mock(ResponseInterface::class);
+        $accessTokenResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode(['access_token' => 'fake-token'])));
+
+        $guzzle = $this->mock(Client::class);
+        $guzzle->expects('post')->andReturns($accessTokenResponse);
+        $guzzle->expects('get')->once()->andReturn($basicAccountResponse);
+
+        $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
+        $provider->setHttpClient($guzzle);
+
+        $provider->user();
+    }
+
+    #[Test]
+    public function it_rethrows_non_404_request_exceptions()
+    {
+        $this->expectException(RequestException::class);
+
+        $request = new Request(['code' => 'auth-code', 'state' => 'state']);
+        $session = $this->app->make('session')->driver('array');
+        $session->put('state', 'state');
+        $request->setLaravelSession($session);
+
+        Http::fake([
+            '*/user/test-user-id/profile' => Http::response([
+                'error' => 'Internal Server Error',
+            ], 500),
+        ]);
+
+        $basicAccountResponse = $this->mock(ResponseInterface::class);
+        $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
+            'id' => 'test-user-id',
+            'email' => 'test@example.com',
+        ])));
+
+        $accessTokenResponse = $this->mock(ResponseInterface::class);
+        $accessTokenResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode(['access_token' => 'fake-token'])));
+
+        $guzzle = $this->mock(Client::class);
+        $guzzle->expects('post')->andReturns($accessTokenResponse);
+        $guzzle->expects('get')->once()->andReturn($basicAccountResponse);
+
+        $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
+        $provider->setHttpClient($guzzle);
+
         $provider->user();
     }
 

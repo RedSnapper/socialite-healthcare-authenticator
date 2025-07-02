@@ -111,7 +111,11 @@ $user->consents()->captions(); // ['Consent 1','Consent 2']
 
 ### Handling errors
 
-When calling the `user` method, there are two exceptions that may be thrown.
+When calling the `user` method, the following exceptions may be thrown:
+
+`\RedSnapper\SocialiteProviders\HealthCareAuthenticator\UserNotFoundException`
+
+This exception is thrown when a user is not found in the Healthcare Authenticator system (404 response). It provides access to the user ID and response body.
 
 `\RedSnapper\SocialiteProviders\HealthCareAuthenticator\HealthCareAuthenticatorRequestException`
 
@@ -120,6 +124,46 @@ This exception is thrown if the user cancels the sign-up process or fails to ver
 `\Laravel\Socialite\Two\InvalidStateException`
 
 This exception is thrown if the state returned by the HCA service does not match the state stored in the session.
+
+`\Illuminate\Http\Client\RequestException`
+
+This exception is thrown for other HTTP errors (500, 503, etc.).
+
+#### Example exception handling:
+
+```php
+use RedSnapper\SocialiteProviders\HealthCareAuthenticator\UserNotFoundException;
+use RedSnapper\SocialiteProviders\HealthCareAuthenticator\HealthCareAuthenticatorRequestException;
+use Illuminate\Http\Client\RequestException;
+
+try {
+    $user = Socialite::driver('hca')->user();
+} catch (UserNotFoundException $e) {
+    // Handle user not found
+    Log::warning('User not found in HCA', [
+        'user_id' => $e->getUserId(),
+        'response' => $e->getResponseBody(),
+    ]);
+    return redirect()->route('login')
+        ->with('error', 'Account not found in Healthcare Authenticator.');
+} catch (HealthCareAuthenticatorRequestException $e) {
+    // Handle user cancellation or verification failure
+    return redirect()->route('login')
+        ->with('error', 'Authentication failed: ' . $e->getMessage());
+} catch (InvalidStateException $e) {
+    // Handle state mismatch
+    return redirect()->route('login')
+        ->with('error', 'Authentication state mismatch. Please try again.');
+} catch (RequestException $e) {
+    // Handle other HTTP errors
+    Log::error('HCA request failed', [
+        'status' => $e->response->status(),
+        'message' => $e->getMessage(),
+    ]);
+    return redirect()->route('login')
+        ->with('error', 'An error occurred during authentication.');
+}
+```
 
 ### Testing
 
