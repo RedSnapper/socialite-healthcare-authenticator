@@ -131,6 +131,61 @@ class ProviderTest extends TestCase
     }
 
     #[Test]
+    public function can_retrieve_a_user_with_code_verifier()
+    {
+        $request = new Request([
+            'code' => 'auth-code',
+            'verifier' => 'verifier'
+        ]);
+        $request->setLaravelSession($this->app->make('session')->driver('array'));
+
+        // Mock access token response
+        $accessTokenResponse = $this->mock(\Psr\Http\Message\ResponseInterface::class);
+        $accessTokenResponse->allows('getBody')->andReturns(
+            \GuzzleHttp\Psr7\Utils::streamFor(json_encode(['access_token' => 'fake-token']))
+        );
+
+        Http::fake([
+            '*/user/b2b/user/*/profile' => Http::response(['id' => 'abc123'], 200),
+        ]);
+
+        // Mock basic account response
+        $basicAccountResponse = $this->mock(\Psr\Http\Message\ResponseInterface::class);
+        $basicAccountResponse->allows('getBody')->andReturns(
+            \GuzzleHttp\Psr7\Utils::streamFor(json_encode([
+                'id' => 'abc123',
+                'email' => 'test@example.com',
+                'uci' => 'signup_ucis',
+            ]))
+        );
+
+        // Mock Guzzle
+        $guzzle = $this->mock(\GuzzleHttp\Client::class);
+
+        // Ensure the `post` call (token exchange) happens with code_verifier
+        $guzzle->expects('post')
+            ->withArgs(function ($url, $options) {
+                $this->assertArrayNotHasKey('client_secret', $options['form_params']);
+                $this->assertArrayHasKey('code_verifier', $options['form_params']);
+                $this->assertEquals('verifier', $options['form_params']['code_verifier']);
+                return true;
+            })
+            ->andReturn($accessTokenResponse);
+
+        $guzzle->expects('get')
+            ->once()
+            ->andReturn($basicAccountResponse);
+
+        $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
+        $provider->setHttpClient($guzzle);
+
+        $user = $provider->user();
+
+        $this->assertEquals('abc123', $user->getId());
+        $this->assertEquals('test@example.com', $user->getEmail());
+    }
+
+    #[Test]
     public function it_will_throw_an_exception_if_the_user_cannot_be_retrieved()
     {
         $this->expectException(HealthCareAuthenticatorRequestException::class);
