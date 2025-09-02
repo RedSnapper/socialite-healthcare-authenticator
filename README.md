@@ -165,6 +165,60 @@ try {
 }
 ```
 
+
+### Magic Links
+
+Magic links are secure, one-time use URLs that allow Healthcare Professionals (HCPs) to quickly sign in or verify their identity without entering credentials. This package now supports generating magic links for HCPs using the Healthcare Authenticator (HCA) API.
+
+To create magic links, use the `MagicLink` class by providing your `client_id`, `api_key`, and `redirect` URI. You then call the `createLinks` method with an array of recipients.
+
+Each recipient must include the following fields:
+- `onekey_id` (string): The OneKey identifier of the HCP.
+- `email` (string): The email address of the HCP.
+- `locale` (string): The locale/language code (e.g., 'en-US', 'it-IT').
+
+You can also specify the expiry time for the links in minutes.
+
+The `createLinks` method returns a `MagicLinkResult` object containing collections of successful and failed links.
+
+Example usage:
+
+```php
+use RedSnapper\SocialiteProviders\HealthCareAuthenticator\MagicLink;
+
+$magicLink = new MagicLink(
+    clientId: config('services.hca.client_id'),
+    apiKey: config('services.hca.api_key'),
+    redirect: config('services.hca.redirect'),
+);
+
+$recipients = [
+    ['onekey_id' => '123456', 'email' => 'hcp1@example.com', 'locale' => 'en-US'],
+    ['onekey_id' => '789012', 'email' => 'hcp2@example.com', 'locale' => 'it-IT'],
+];
+
+$result = $magicLink->createLinks($recipients, expiryMinutes: 60);
+```
+
+You can iterate over successful and failed links as follows:
+
+```php
+foreach ($result->successful() as $link) {
+    // $link is a GeneratedMagicLink DTO
+    echo "Magic link for {$link->accountEmail}: {$link->url}\n";
+}
+
+foreach ($result->failed() as $failed) {
+    // $failed is a FailedMagicLink DTO
+    echo "Failed to create link for {$failed->requestEmail}: {$failed->error}\n";
+}
+```
+
+Both successful and failed links are returned as lightweight Data Transfer Objects (DTOs):
+- `GeneratedMagicLink` for successful links.
+- `FailedMagicLink` for failed link creation attempts.
+
+
 ### Testing
 
 ```bash
