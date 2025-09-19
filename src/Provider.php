@@ -5,6 +5,7 @@ namespace RedSnapper\SocialiteProviders\HealthCareAuthenticator;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 
 class Provider extends AbstractProvider
@@ -119,5 +120,32 @@ class Provider extends AbstractProvider
             'trustLevel' => Arr::get($user, 'trustLevel'),
         ]);
 
+    }
+
+    protected function getTokenFields($code)
+    {
+        $fields = [
+            'grant_type' => 'authorization_code',
+            'client_id' => $this->clientId,
+            'client_secret' => $this->clientSecret,
+            'code' => $code,
+            'redirect_uri' => $this->redirectUrl,
+        ];
+
+        if ($this->request->has('verifier')) {
+            $fields['code_verifier'] = $this->request->get('verifier');
+            unset($fields['client_secret']);
+        }
+
+        return array_merge($fields, $this->parameters);
+    }
+
+    protected function hasInvalidState()
+    {
+        if($this->request->has('verifier')) {
+            return false;
+        }
+
+        return parent::hasInvalidState();
     }
 }
