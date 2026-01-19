@@ -39,7 +39,7 @@ class MagicLinkTest extends TestCase
         ];
 
         Http::fake([
-            '/b2b' => Http::response($responseData)
+            '/b2b/' => Http::response($responseData)
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, '/callback');
@@ -88,7 +88,7 @@ class MagicLinkTest extends TestCase
         ];
 
         Http::fake([
-            '/b2b' => Http::response($responseData, 200)
+            '/b2b/' => Http::response($responseData, 200)
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, $this->redirectUrl);
@@ -105,7 +105,7 @@ class MagicLinkTest extends TestCase
     public function test_client_error_throws_exception()
     {
         Http::fake([
-            '/b2b' => Http::response([], 400)
+            '/b2b/' => Http::response([], 400)
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, $this->redirectUrl);
@@ -118,7 +118,7 @@ class MagicLinkTest extends TestCase
     public function test_server_error_throws_exception()
     {
         Http::fake([
-            '/b2b' => Http::response([], 500)
+            '/b2b/' => Http::response([], 500)
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, $this->redirectUrl);
@@ -131,7 +131,7 @@ class MagicLinkTest extends TestCase
     public function test_connection_error_throws_exception()
     {
         Http::fake([
-            '/b2b' => Http::failedConnection()
+            '/b2b/' => Http::failedConnection()
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, $this->redirectUrl);
@@ -149,7 +149,7 @@ class MagicLinkTest extends TestCase
         Config::set('services.hca.redirect', '/callback');
 
         Http::fake([
-            '/b2b' => Http::response(['links' => [], 'failed_links' => []], 200)
+            '/b2b/' => Http::response(['links' => [], 'failed_links' => []], 200)
         ]);
 
         $magicLink = new MagicLink(); // no params, should fall back to config
