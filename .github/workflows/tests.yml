@@ -10,7 +10,6 @@ on:
       - 'phpunit.xml.dist'
       - 'composer.json'
       - 'composer.lock'
-      -
 jobs:
   tests:
     name: Run tests

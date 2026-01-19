@@ -84,7 +84,7 @@ class ProviderTest extends TestCase
 
         $basicAccountResponse = $this->mock(ResponseInterface::class);
         $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
-            'id' => 'abc123',
+            'user_id' => 'abc123',
             'email' => 'web@redsnapper.net',
             'uci' => 'signup_ucis',
         ])));
@@ -153,7 +153,7 @@ class ProviderTest extends TestCase
         $basicAccountResponse = $this->mock(\Psr\Http\Message\ResponseInterface::class);
         $basicAccountResponse->allows('getBody')->andReturns(
             \GuzzleHttp\Psr7\Utils::streamFor(json_encode([
-                'id' => 'abc123',
+                'user_id' => 'abc123',
                 'email' => 'test@example.com',
                 'uci' => 'signup_ucis',
             ]))
@@ -216,7 +216,7 @@ class ProviderTest extends TestCase
 
         $basicAccountResponse = $this->mock(ResponseInterface::class);
         $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
-            'id' => 'test-user-id',
+            'user_id' => 'test-user-id',
             'email' => 'test@example.com',
         ])));
 
@@ -251,7 +251,7 @@ class ProviderTest extends TestCase
 
         $basicAccountResponse = $this->mock(ResponseInterface::class);
         $basicAccountResponse->allows('getBody')->andReturns(Utils::streamFor(json_encode([
-            'id' => 'test-user-id',
+            'user_id' => 'test-user-id',
             'email' => 'test@example.com',
         ])));
 

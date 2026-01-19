@@ -34,20 +34,20 @@ class Provider extends AbstractProvider
 
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase('https://auth.onekeyconnect.com/auth.onekeyconnect.com/b2c_1a_hca_signup_signin/oauth2/v2.0/authorize',
+        return $this->buildAuthUrlFromBase('https://auth.hcn.health/hca/authorize',
             $state);
     }
 
     protected function getTokenUrl()
     {
-        return 'https://auth.onekeyconnect.com/auth.onekeyconnect.com/b2c_1a_hca_signup_signin/oauth2/v2.0/token/';
+        return 'https://auth.hcn.health/hca/token';
     }
 
     protected function getUserByToken($token)
     {
 
         $account = $this->getUserInfoByToken($token, '/account');
-        $profile = $this->getUserById($account['id']);
+        $profile = $this->getUserById($account['user_id']);
 
         $profile['email'] = $account['email'];
         $profile['signup_ucis'] = $account['uci'];
@@ -57,7 +57,7 @@ class Provider extends AbstractProvider
 
     protected function getUserInfoByToken(string $token, string $endpoint): array
     {
-        $response = $this->getHttpClient()->get('https://apim-prod-westeu-onekey.azure-api.net/api/hca/user/me'.$endpoint,
+        $response = $this->getHttpClient()->get("https://api.healthcaresdks.com/api/hca/user/me/$endpoint?api-version=230505",
             [
                 'headers' => [
                     'Accept' => 'application/json',
