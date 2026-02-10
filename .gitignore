@@ -4,3 +4,4 @@
 /build
 phpstan.neon
 .idea
+composer.lock
