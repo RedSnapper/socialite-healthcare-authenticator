@@ -39,7 +39,7 @@ class MagicLinkTest extends TestCase
         ];
 
         Http::fake([
-            '/b2b/' => Http::response($responseData)
+            'api.healthcaresdks.com/*' => Http::response($responseData)
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, '/callback');
@@ -88,7 +88,7 @@ class MagicLinkTest extends TestCase
         ];
 
         Http::fake([
-            '/b2b/' => Http::response($responseData, 200)
+            'api.healthcaresdks.com/*' => Http::response($responseData, 200)
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, $this->redirectUrl);
@@ -105,7 +105,7 @@ class MagicLinkTest extends TestCase
     public function test_client_error_throws_exception()
     {
         Http::fake([
-            '/b2b/' => Http::response([], 400)
+            'api.healthcaresdks.com/*' => Http::response([], 400)
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, $this->redirectUrl);
@@ -118,7 +118,7 @@ class MagicLinkTest extends TestCase
     public function test_server_error_throws_exception()
     {
         Http::fake([
-            '/b2b/' => Http::response([], 500)
+            'api.healthcaresdks.com/*' => Http::response([], 500)
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, $this->redirectUrl);
@@ -131,7 +131,7 @@ class MagicLinkTest extends TestCase
     public function test_connection_error_throws_exception()
     {
         Http::fake([
-            '/b2b/' => Http::failedConnection()
+            'api.healthcaresdks.com/*' => Http::failedConnection()
         ]);
 
         $magicLink = new MagicLink($this->clientId, $this->apiKey, $this->redirectUrl);
@@ -149,7 +149,7 @@ class MagicLinkTest extends TestCase
         Config::set('services.hca.redirect', '/callback');
 
         Http::fake([
-            '/b2b/' => Http::response(['links' => [], 'failed_links' => []], 200)
+            'api.healthcaresdks.com/*' => Http::response(['links' => [], 'failed_links' => []], 200)
         ]);
 
         $magicLink = new MagicLink(); // no params, should fall back to config

@@ -34,7 +34,7 @@ class MagicLink
         try {
             $response = Http::withHeaders([
                 'Ocp-Apim-Subscription-Key' => $this->apiKey,
-            ])->post('https://apim-prod-westeu-onekey.azure-api.net/api/hca/link/b2b/', [
+            ])->post('https://api.healthcaresdks.com/api/hca/link/b2b', [
                 'links' => [
                     'recipients'         => $recipients,
                     'client_id'          => $this->clientId,
