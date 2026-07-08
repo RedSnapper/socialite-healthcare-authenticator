@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
 use RedSnapper\SocialiteProviders\HealthCareAuthenticator\HealthCareAuthenticatorRequestException;
 use RedSnapper\SocialiteProviders\HealthCareAuthenticator\HealthCareAuthenticatorUser;
+use RedSnapper\SocialiteProviders\HealthCareAuthenticator\MissingAccessTokenException;
 use RedSnapper\SocialiteProviders\HealthCareAuthenticator\Provider;
 use RedSnapper\SocialiteProviders\HealthCareAuthenticator\UserNotFoundException;
 use SocialiteProviders\Manager\Config;
@@ -135,14 +136,14 @@ class ProviderTest extends TestCase
     {
         $request = new Request([
             'code' => 'auth-code',
-            'verifier' => 'verifier'
+            'verifier' => 'verifier',
         ]);
         $request->setLaravelSession($this->app->make('session')->driver('array'));
 
         // Mock access token response
-        $accessTokenResponse = $this->mock(\Psr\Http\Message\ResponseInterface::class);
+        $accessTokenResponse = $this->mock(ResponseInterface::class);
         $accessTokenResponse->allows('getBody')->andReturns(
-            \GuzzleHttp\Psr7\Utils::streamFor(json_encode(['access_token' => 'fake-token']))
+            Utils::streamFor(json_encode(['access_token' => 'fake-token']))
         );
 
         Http::fake([
@@ -150,9 +151,9 @@ class ProviderTest extends TestCase
         ]);
 
         // Mock basic account response
-        $basicAccountResponse = $this->mock(\Psr\Http\Message\ResponseInterface::class);
+        $basicAccountResponse = $this->mock(ResponseInterface::class);
         $basicAccountResponse->allows('getBody')->andReturns(
-            \GuzzleHttp\Psr7\Utils::streamFor(json_encode([
+            Utils::streamFor(json_encode([
                 'user_id' => 'abc123',
                 'email' => 'test@example.com',
                 'uci' => 'signup_ucis',
@@ -160,7 +161,7 @@ class ProviderTest extends TestCase
         );
 
         // Mock Guzzle
-        $guzzle = $this->mock(\GuzzleHttp\Client::class);
+        $guzzle = $this->mock(Client::class);
 
         // Ensure the `post` call (token exchange) happens with code_verifier
         $guzzle->expects('post')
@@ -168,6 +169,7 @@ class ProviderTest extends TestCase
                 $this->assertArrayNotHasKey('client_secret', $options['form_params']);
                 $this->assertArrayHasKey('code_verifier', $options['form_params']);
                 $this->assertEquals('verifier', $options['form_params']['code_verifier']);
+
                 return true;
             })
             ->andReturn($accessTokenResponse);
@@ -194,6 +196,77 @@ class ProviderTest extends TestCase
         $request = new Request(['error' => 'denied', 'error_description' => 'User denied access']);
         $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
         $provider->user();
+    }
+
+    #[Test]
+    public function it_throws_a_missing_access_token_exception_when_the_token_response_has_no_access_token()
+    {
+        $request = new Request(['code' => 'auth-code', 'state' => 'state']);
+        $session = $this->app->make('session')->driver('array');
+        $session->put('state', 'state');
+        $request->setLaravelSession($session);
+
+        // A 2xx token exchange that returns no access_token (e.g. an off-spec
+        // error payload). Previously this produced a fatal TypeError when the
+        // null token reached the string-typed getUserInfoByToken().
+        $rawBody = json_encode([
+            'error' => 'invalid_grant',
+            'error_description' => 'Authorization code expired.',
+        ]);
+
+        $accessTokenResponse = $this->mock(ResponseInterface::class);
+        $accessTokenResponse->allows('getBody')->andReturns(Utils::streamFor($rawBody));
+        $accessTokenResponse->allows('getStatusCode')->andReturns(200);
+
+        $guzzle = $this->mock(Client::class);
+        $guzzle->expects('post')->andReturns($accessTokenResponse);
+        $guzzle->expects('get')->never();
+
+        $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
+        $provider->setHttpClient($guzzle);
+
+        try {
+            $provider->user();
+            $this->fail('Expected MissingAccessTokenException was not thrown.');
+        } catch (MissingAccessTokenException $e) {
+            $this->assertInstanceOf(HealthCareAuthenticatorRequestException::class, $e);
+            $this->assertEquals('Healthcare Authenticator did not return an access token.', $e->getMessage());
+            $this->assertEquals(200, $e->getStatus());
+            $this->assertEquals($rawBody, $e->getRawBody());
+        }
+    }
+
+    #[Test]
+    public function it_throws_a_missing_access_token_exception_when_the_token_response_body_is_not_json()
+    {
+        $request = new Request(['code' => 'auth-code', 'state' => 'state']);
+        $session = $this->app->make('session')->driver('array');
+        $session->put('state', 'state');
+        $request->setLaravelSession($session);
+
+        // A 2xx response whose body cannot be decoded to a token (e.g. a proxy
+        // timeout page returned with a 200). json_decode yields null, so the
+        // decoded credentialsResponseBody would tell us nothing — the raw body
+        // is what we retain for diagnostics.
+        $rawBody = '<html><body>Gateway Timeout</body></html>';
+
+        $accessTokenResponse = $this->mock(ResponseInterface::class);
+        $accessTokenResponse->allows('getBody')->andReturns(Utils::streamFor($rawBody));
+        $accessTokenResponse->allows('getStatusCode')->andReturns(200);
+
+        $guzzle = $this->mock(Client::class);
+        $guzzle->expects('post')->andReturns($accessTokenResponse);
+        $guzzle->expects('get')->never();
+
+        $provider = new Provider($request, 'client_id', 'client_secret', 'redirect');
+        $provider->setHttpClient($guzzle);
+
+        try {
+            $provider->user();
+            $this->fail('Expected MissingAccessTokenException was not thrown.');
+        } catch (MissingAccessTokenException $e) {
+            $this->assertEquals($rawBody, $e->getRawBody());
+        }
     }
 
     #[Test]
