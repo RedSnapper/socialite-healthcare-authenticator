@@ -2,10 +2,10 @@
 
 namespace RedSnapper\SocialiteProviders\HealthCareAuthenticator;
 
+use GuzzleHttp\RequestOptions;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 
 class Provider extends AbstractProvider
@@ -43,9 +43,34 @@ class Provider extends AbstractProvider
         return 'https://auth.hcn.health/hca/token';
     }
 
+    public function getAccessTokenResponse($code)
+    {
+        $response = $this->getHttpClient()->post($this->getTokenUrl(), [
+            RequestOptions::HEADERS => $this->getTokenHeaders($code),
+            RequestOptions::FORM_PARAMS => $this->getTokenFields($code),
+        ]);
+
+        $body = (string) $response->getBody();
+        $decoded = json_decode($body, true);
+
+        // A successful (2xx) token exchange must contain an access token. When it
+        // does not, the upstream provider has responded off-spec — an error payload
+        // returned with a 200, or an empty/non-JSON body. Capture the raw status and
+        // body for diagnostics and surface it as an expected exception, rather than
+        // letting a null token reach the string-typed getUserInfoByToken() and blow
+        // up as a fatal TypeError. (4xx/5xx responses throw in Guzzle before here.)
+        if (blank(Arr::get(is_array($decoded) ? $decoded : [], 'access_token'))) {
+            throw new MissingAccessTokenException(
+                status: $response->getStatusCode(),
+                rawBody: $body,
+            );
+        }
+
+        return $decoded;
+    }
+
     protected function getUserByToken($token)
     {
-
         $account = $this->getUserInfoByToken($token, '/account');
         $profile = $this->getUserById($account['user_id']);
 
@@ -86,7 +111,7 @@ class Provider extends AbstractProvider
                     previous: $e
                 );
             }
-            
+
             // Re-throw other exceptions
             throw $e;
         }
@@ -142,7 +167,7 @@ class Provider extends AbstractProvider
 
     protected function hasInvalidState()
     {
-        if($this->request->has('verifier')) {
+        if ($this->request->has('verifier')) {
             return false;
         }
 
